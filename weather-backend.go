@@ -16,7 +16,6 @@ import (
 )
 
 func init() {
-
 	err := godotenv.Load(".env")
 
 	if err != nil {
@@ -28,6 +27,7 @@ func main() {
 	// Create Gin router
 	router := gin.Default()
 
+	// Add CORS middleware
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	router.Use(cors.New(config))
@@ -62,6 +62,7 @@ func getForecastFromLocation(c *gin.Context) {
 	requestUrl.WriteString(",")
 	requestUrl.WriteString(long)
 
+	// Poll NWS API to get gridpoints / forecast URL from lat/long
 	body, err := makeGetRequest(requestUrl.String(), c)
 
 	if err != nil {
@@ -77,13 +78,16 @@ func getForecastFromLocation(c *gin.Context) {
 		return
 	}
 
+	// Get actual forecast with our returned gridpoints / forecast URL
 	getForecastFromGridpoints(pointData.Properties.Forecast, c)
 
 }
 
 func getForecastFromGridpoints(forecastLink string, c *gin.Context) {
+	// Poll NWS API for forecast for grid points
 	body, err := makeGetRequest(forecastLink, c)
 
+	// Return to the client
 	handleForecastResponse(body, err, c)
 }
 
@@ -102,12 +106,15 @@ func getForecastFromLandmark(c *gin.Context) {
 	requestUrl.WriteString(gridY)
 	requestUrl.WriteString("/forecast")
 
+	// Poll NWS API for forecast for gridpoints
 	body, err := makeGetRequest(requestUrl.String(), c)
 
+	// Return to the client
 	handleForecastResponse(body, err, c)
 }
 
 func sendMessage(c *gin.Context) {
+	// Initialize SendinBlue API
 	var ctx context.Context
 	cfg := sendinblue.NewConfiguration()
 	//Configure API key authorization: api-key
@@ -115,6 +122,7 @@ func sendMessage(c *gin.Context) {
 
 	sib := sendinblue.NewAPIClient(cfg)
 
+	// Bind POST request body data to MessageData struct
 	var postData MessageData
 	err := c.BindJSON(&postData)
 
@@ -122,11 +130,13 @@ func sendMessage(c *gin.Context) {
 		handleMessageError(err, c)
 	}
 
+	// Create email message body
 	htmlContent := fmt.Sprintf(`A new message has been sent from CDT Weather:<br />
               Sender Name: %s<br />
               Sender Email: %s<br /><br />
               Message: %s<br />`, postData.Name, postData.Email, postData.Message)
 
+	// Build email metadata
 	body := sendinblue.SendSmtpEmail{
 		HtmlContent: htmlContent,
 		Subject:     "New Message from Weather Backend",
@@ -139,12 +149,14 @@ func sendMessage(c *gin.Context) {
 			Email: "zbtucker@gmail.com",
 		}},
 	}
+	// Send email
 	_, _, sendErr := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
 
 	if sendErr != nil {
 		handleMessageError(err, c)
 	}
 
+	// Return to the client
 	c.JSON(http.StatusOK, gin.H{"message": "Message Sent!"})
 
 }
