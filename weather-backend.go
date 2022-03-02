@@ -12,7 +12,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/sendinblue/APIv3-go-library/lib"
 	sendinblue "github.com/sendinblue/APIv3-go-library/lib"
 )
 
@@ -135,7 +134,7 @@ func sendMessage(c *gin.Context) {
 			Name:  "Weather Backend",
 			Email: "zbtucker@gmail.com",
 		},
-		To: []lib.SendSmtpEmailTo{{
+		To: []sendinblue.SendSmtpEmailTo{{
 			Name:  "Weather Backend",
 			Email: "zbtucker@gmail.com",
 		}},
