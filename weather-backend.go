@@ -16,10 +16,13 @@ import (
 )
 
 func init() {
-	err := godotenv.Load(".env")
+	// Only load an .env file if we are in dev environment
+	if os.Getenv("GO_ENV") == "development" {
+		err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal("Error loading .env file")
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 }
 
