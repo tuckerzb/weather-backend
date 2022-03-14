@@ -14,12 +14,12 @@ const messageSendErrorMessage = "There was an issue sending your message."
 
 func handleNwsError(err error, c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, gin.H{"message": nwsErrorMessage})
-	log.Fatalln(err)
+	log.Println(err)
 }
 
 func handleMessageError(err error, c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, gin.H{"message": messageSendErrorMessage})
-	log.Fatalln(err)
+	log.Println(err)
 }
 
 func makeGetRequest(url string, c *gin.Context) (body []byte, err error) {
